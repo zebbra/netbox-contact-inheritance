@@ -1,0 +1,19 @@
+{% load i18n %}
+<div class="alert alert-info d-flex align-items-start" role="alert">
+  <i class="mdi mdi-information-outline me-2"></i>
+  <div>
+    {% blocktrans trimmed %}
+      The table below lists only the contacts assigned directly to this object. Prefer assigning contacts
+      to a parent object ({{ parents }}) and let them be inherited.
+    {% endblocktrans %}
+    {% if inherited_count %}
+      <a href="{{ object.get_absolute_url }}">
+        {% blocktrans trimmed count counter=inherited_count %}
+          {{ counter }} more contact is inherited, see All Contacts.
+        {% plural %}
+          {{ counter }} more contacts are inherited, see All Contacts.
+        {% endblocktrans %}
+      </a>
+    {% endif %}
+  </div>
+</div>

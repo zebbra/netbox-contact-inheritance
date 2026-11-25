@@ -1,0 +1,41 @@
+{% load i18n %}
+<div class="card">
+  <h2 class="card-header">{{ title }}</h2>
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>{% trans "Contact" %}</th>
+          <th>{% trans "Role" %}</th>
+          <th>{% trans "From" %}</th>
+        </tr>
+      </thead>
+      {% for section in sections %}
+        <tbody>
+          {% if show_section_headers %}
+            <tr class="table-light">
+              <th colspan="3" class="small">
+                {% if section.termination %}
+                  <a href="{{ section.termination.get_absolute_url }}">{{ section.title }}</a>
+                  {% if section.scope %}
+                    <span class="text-secondary fw-normal">&middot; <a href="{{ section.scope.get_absolute_url }}" class="text-secondary">{{ section.scope }}</a></span>
+                  {% endif %}
+                  {% for device in section.devices %}
+                    <span class="text-secondary fw-normal">&middot; <i class="mdi mdi-cable-data"></i> <a href="{{ device.get_absolute_url }}" class="text-secondary">{{ device }}</a></span>
+                  {% endfor %}
+                {% else %}
+                  {{ section.title }}
+                {% endif %}
+              </th>
+            </tr>
+          {% endif %}
+          {% if section.items %}
+            {% include 'netbox_contact_inheritance/_contact_rows.html' with items=section.items %}
+          {% else %}
+            <tr><td colspan="3" class="text-muted">{% trans "None" %}</td></tr>
+          {% endif %}
+        </tbody>
+      {% endfor %}
+    </table>
+  </div>
+</div>

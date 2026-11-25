@@ -5,6 +5,8 @@ objects below them. A facility manager assigned to a region shows up on every si
 in it, and each entry tells where it is inherited from. You maintain one assignment instead of
 thousands.
 
+<img src="docs/effective-contacts-circuit.png" alt="Effective contacts of a circuit: own and provider contacts, then per side the location and the cabled devices" width="460">
+
 Status: **mock / proof of concept**. Read-only, it creates no models, and it uses only native
 contact assignments plus one custom field.
 
@@ -35,14 +37,21 @@ to a device.
 
 ## What it does
 
-![Effective contacts on a device](docs/effective-contacts-device.png)
+<img src="docs/effective-contacts-device.png" alt="Effective contacts on a device" width="460">
 
 
-- An **Effective Contacts** panel on site, location, rack, device and virtual machine pages. It lists
+- An **All Contacts** panel on site, location, rack, device and virtual machine pages. It lists
   the object's own contacts plus the inherited ones, with the object each one comes from.
 - A **Reach** panel on contact pages: per assignment, how many sites, locations, racks, devices and
   VMs below the assigned object inherit it. Each count links to the regular NetBox list filtered to
   exactly those objects. When someone leaves, you see at a glance what depends on them.
+- A one-line hint on the native **Contacts** tab: it lists direct assignments only, prefer parent
+  objects, and N more contacts are inherited (linking to *All Contacts*).
+- **Circuits:** the panel on circuits shows the circuit's own contacts and those of its provider. Below
+  that comes one block per termination side (A, Z) with the contacts of the location or site the
+  termination is attached to, plus those of the devices cabled to it. The cable path is traced through
+  patch panels, and such entries are marked "via cable". A circuit termination page shows its own
+  side. Provider contacts reach the circuits unless their inherit depth is `none`.
 - A read-only API endpoint with the effective contacts of an object:
 
   ```
@@ -50,9 +59,11 @@ to a device.
   ```
 
   Each result holds the assignment, the full contact, role, priority, `inherited`, the applied
-  `inherit_depth` and the `source` object (type, id, level, distance).
+  `inherit_depth` and the `source` object (type, id, level, distance). For `circuits.circuit` and
+  `circuits.circuittermination`, each result also has a `section` (`circuit`, `A`, `Z`) and `via`
+  (the cabled device, or null).
 
-![Reach of a contact](docs/reach-contact.png)
+<img src="docs/reach-contact.png" alt="Reach of a contact" width="760">
 
 ### Inheritance path
 
@@ -80,13 +91,16 @@ shows on the sites only. The caretaker of a datacenter gets `location`: building
 but the racks belong to IT. The electrician of a building gets `rack`. At a small branch site the
 caretaker also restarts the server and gets `device`.
 
+The Circuits column of the reach panel counts circuits for provider assignments only. Virtual circuits
+are not supported yet.
+
 `location` covers all nested location levels. "Down to the floor but not the rooms" is not possible.
 
 Direct assignments always show. `none` means "only on the object itself".
 
 | Small site: caretaker with depth `device` | Datacenter room: caretaker with depth `location` |
 |---|---|
-| ![Small site](docs/effective-contacts-small-site.png) | ![Datacenter room](docs/effective-contacts-location.png) |
+| <img src="docs/effective-contacts-small-site.png" alt="Small site" width="380"> | <img src="docs/effective-contacts-location.png" alt="Datacenter room" width="380"> |
 
 The panel sits in the right column of the detail page, see the [full device page](docs/device-page.png).
 

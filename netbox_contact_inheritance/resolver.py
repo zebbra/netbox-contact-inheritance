@@ -20,6 +20,8 @@ LEVEL_LABELS = {
     'location': 'Location',
     'rack': 'Rack',
     'device': 'Device',
+    'provider': 'Provider',
+    'circuit': 'Circuit',
 }
 
 
@@ -91,6 +93,8 @@ class EffectiveContact:
     distance: int
     inherited: bool
     depth: str
+    via: object = None  # device reached over a cable, for circuit terminations
+    section: str = None  # circuits only: 'circuit', 'A' or 'Z'
 
     @property
     def source_label(self):
@@ -101,7 +105,15 @@ def get_effective_contacts(obj, user=None):
     """
     Return the EffectiveContact list for obj: its own assignments plus those inherited from ancestors
     whose inherit depth reaches obj's level. Per contact and role only the nearest assignment is kept.
+
+    For a circuit or circuit termination the result is the flat list of its sections (circuit and
+    provider, side A, side Z), with `section` and `via` set on each entry.
     """
+    from .circuit_contacts import CIRCUIT_MODELS, get_circuit_sections
+
+    if isinstance(obj, CIRCUIT_MODELS):
+        return [ec for s in get_circuit_sections(obj, user) for ec in s.items]
+
     cfg = plugin_settings()
     chain = get_chain(obj)
     target_level = chain[0][0]

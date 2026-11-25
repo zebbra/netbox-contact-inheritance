@@ -1,6 +1,6 @@
 [project]
 name = "netbox-contact-inheritance"
-version = "0.1.0"
+version = "0.2.0"
 description = "NetBox plugin that shows contacts inherited from region, site, location and rack on the objects below them"
 readme = "README.md"
 license = "MIT"
