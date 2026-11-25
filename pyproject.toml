@@ -17,7 +17,7 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-packages = ["netbox_contact_inheritance", "netbox_contact_inheritance.api"]
+packages = ["netbox_contact_inheritance", "netbox_contact_inheritance.api", "netbox_contact_inheritance.migrations"]
 
 [tool.setuptools.package-data]
 netbox_contact_inheritance = ["templates/**/*.html"]

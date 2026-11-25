@@ -106,9 +106,10 @@ PLUGINS_CONFIG = {
 }
 ```
 
-Create a select custom field `inherit_depth` on *Tenancy > Contact Role* and *Tenancy > Contact
-Assignment*, with the choices `none`, `site`, `location`, `rack` and `device`. Without the field,
-every assignment is inherited down to `default_depth`.
+Run `manage.py migrate` (netbox-docker does it on start). The plugin's migration creates the select
+custom field `inherit_depth` on *Tenancy > Contact Role* and *Tenancy > Contact Assignment*, with the
+choices `none`, `site`, `location`, `rack` and `device`. If a field of that name already exists, it is
+kept and only the two object types are added. Uninstalling leaves the field in place.
 
 Requires NetBox 4.6.5 or later.
 

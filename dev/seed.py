@@ -1,8 +1,6 @@
 # Demo data: a region tree, a large campus and a small branch site, with contacts on several levels.
 # Rerunning resets the contact assignments to this state.
-from core.models import ObjectType
 from dcim.models import Device, DeviceRole, DeviceType, Location, Manufacturer, Rack, Region, Site, SiteGroup
-from extras.models import CustomField, CustomFieldChoiceSet
 from tenancy.models import Contact, ContactAssignment, ContactGroup, ContactRole
 from virtualization.models import Cluster, ClusterType, VirtualMachine
 
@@ -20,30 +18,7 @@ def tree(model, name, parent=None, **extra):
     return obj
 
 
-# Inherit depth custom field on roles (default) and assignments (override)
-depth_choices, _ = CustomFieldChoiceSet.objects.update_or_create(
-    name='Contact inherit depth',
-    defaults={'extra_choices': [
-        ['none', 'Only this object'],
-        ['site', 'Down to sites'],
-        ['location', 'Down to locations (all levels)'],
-        ['rack', 'Down to racks'],
-        ['device', 'Down to devices and VMs'],
-    ]},
-)
-depth_cf, _ = CustomField.objects.update_or_create(
-    name='inherit_depth',
-    defaults={
-        'type': 'select',
-        'label': 'Inherit depth',
-        'choice_set': depth_choices,
-        'description': 'How far down this contact is inherited. On an assignment it overrides the role default.',
-    },
-)
-depth_cf.object_types.set([
-    ObjectType.objects.get_for_model(ContactRole),
-    ObjectType.objects.get_for_model(ContactAssignment),
-])
+# The inherit_depth custom field is created by the plugin migration
 
 # Hierarchy
 ch = tree(Region, 'Schweiz')
