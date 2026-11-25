@@ -5,6 +5,8 @@ objects below them. A facility manager assigned to a region shows up on every si
 in it, and each entry tells where it is inherited from. You maintain one assignment instead of
 thousands.
 
+<img src="docs/effective-contacts-circuit.png" alt="Effective contacts of a circuit: own and provider contacts, then per side the location and the cabled devices" width="460">
+
 Status: **mock / proof of concept**. Read-only, it creates no models, and it uses only native
 contact assignments plus one custom field.
 
@@ -35,7 +37,7 @@ to a device.
 
 ## What it does
 
-![Effective contacts on a device](docs/effective-contacts-device.png)
+<img src="docs/effective-contacts-device.png" alt="Effective contacts on a device" width="460">
 
 
 - An **Effective Contacts** panel on site, location, rack, device and virtual machine pages. It lists
@@ -59,7 +61,7 @@ to a device.
   `circuits.circuittermination`, each result also has a `section` (`circuit`, `A`, `Z`) and `via`
   (the cabled device, or null).
 
-![Reach of a contact](docs/reach-contact.png)
+<img src="docs/reach-contact.png" alt="Reach of a contact" width="760">
 
 ### Inheritance path
 
@@ -96,7 +98,7 @@ Direct assignments always show. `none` means "only on the object itself".
 
 | Small site: caretaker with depth `device` | Datacenter room: caretaker with depth `location` |
 |---|---|
-| ![Small site](docs/effective-contacts-small-site.png) | ![Datacenter room](docs/effective-contacts-location.png) |
+| <img src="docs/effective-contacts-small-site.png" alt="Small site" width="380"> | <img src="docs/effective-contacts-location.png" alt="Datacenter room" width="380"> |
 
 The panel sits in the right column of the detail page, see the [full device page](docs/device-page.png).
 
