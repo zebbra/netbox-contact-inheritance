@@ -195,9 +195,13 @@ try:
 
         r = c.get(dev.get_absolute_url())
         html = r.content.decode()
-        check(r.status_code == 200 and 'Effective Contacts' in html and 'Linux Admins' in html,
+        check(r.status_code == 200 and 'All Contacts' in html and 'Linux Admins' in html,
               f'device page shows panel (status {r.status_code})')
         contacts_url = f'/dcim/devices/{dev.pk}/contacts/'
+        r = c.get(contacts_url)
+        tab = r.content.decode()
+        check(r.status_code == 200 and 'Prefer assigning' in tab and '3 more contacts are inherited' in tab
+              and 'Linux Admins' not in tab, f'contacts tab shows the hint with the inherited count (status {r.status_code})')
         check(f'href="{contacts_url}">direct</a>' in html, f'"direct" links to {contacts_url}')
 
         noc = Contact.objects.get(name='NOC')
@@ -225,6 +229,13 @@ try:
         html = r.content.decode()
         check(r.status_code == 200 and 'Side Z' in html and 'Server Owner Lea' in html and 'Fibernet NOC' in html,
               f'circuit page shows sections (status {r.status_code})')
+        r = c.get(f'/circuits/circuits/{df.pk}/contacts/')
+        tab = r.content.decode()
+        check(r.status_code == 200 and 'the provider, or the site' in tab and '10 more contacts are inherited' in tab,
+              f'circuit contacts tab shows the hint (status {r.status_code})')
+        flat = get_effective_contacts(df)
+        check(len(flat) == 11 and {ec.section for ec in flat} == {'circuit', 'A', 'Z'},
+              'get_effective_contacts flattens circuit sections')
         r = c.get(term_z.get_absolute_url())
         check(r.status_code == 200 and 'Hauswart RZ' in r.content.decode(),
               f'termination page shows its side (status {r.status_code})')

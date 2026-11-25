@@ -94,7 +94,7 @@ def termination_section(termination, user=None):
         termination=termination,
         scope=scope,
         devices=devices,
-        items=_merge([scope_items, device_items]),
+        items=[replace(ec, section=side) for ec in _merge([scope_items, device_items])],
     )
 
 
@@ -120,7 +120,7 @@ def circuit_section(circuit, user=None):
             inherited=on_provider,
             depth=depth,
         ))
-    return Section(key='circuit', title='Circuit', items=_merge([items]))
+    return Section(key='circuit', title='Circuit', items=[replace(ec, section='circuit') for ec in _merge([items])])
 
 
 def get_circuit_sections(obj, user=None):

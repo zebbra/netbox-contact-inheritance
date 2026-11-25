@@ -40,11 +40,13 @@ to a device.
 <img src="docs/effective-contacts-device.png" alt="Effective contacts on a device" width="460">
 
 
-- An **Effective Contacts** panel on site, location, rack, device and virtual machine pages. It lists
+- An **All Contacts** panel on site, location, rack, device and virtual machine pages. It lists
   the object's own contacts plus the inherited ones, with the object each one comes from.
 - A **Reach** panel on contact pages: per assignment, how many sites, locations, racks, devices and
   VMs below the assigned object inherit it. Each count links to the regular NetBox list filtered to
   exactly those objects. When someone leaves, you see at a glance what depends on them.
+- A one-line hint on the native **Contacts** tab: it lists direct assignments only, prefer parent
+  objects, and N more contacts are inherited (linking to *All Contacts*).
 - **Circuits:** the panel on circuits shows the circuit's own contacts and those of its provider. Below
   that comes one block per termination side (A, Z) with the contacts of the location or site the
   termination is attached to, plus those of the devices cabled to it. The cable path is traced through

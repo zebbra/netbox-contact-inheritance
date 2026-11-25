@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from netbox.api.authentication import IsAuthenticatedOrLoginNotRequired
 from tenancy.api.serializers import ContactAssignmentSerializer, ContactRoleSerializer, ContactSerializer
 
-from ..circuit_contacts import CIRCUIT_MODELS, get_circuit_sections
+from ..circuit_contacts import CIRCUIT_MODELS
 from ..resolver import SUPPORTED_MODELS, get_effective_contacts
 
 
@@ -46,12 +46,8 @@ class EffectiveContactsView(APIView):
             raise NotFound()
 
         ctx = {'request': request}
-        if model in CIRCUIT_MODELS:
-            entries = [(s.key, ec) for s in get_circuit_sections(obj, request.user) for ec in s.items]
-        else:
-            entries = [(None, ec) for ec in get_effective_contacts(obj, request.user)]
         results = []
-        for section, ec in entries:
+        for ec in get_effective_contacts(obj, request.user):
             a = ec.assignment
             results.append({
                 'assignment': ContactAssignmentSerializer(a, nested=True, context=ctx).data,
@@ -67,7 +63,7 @@ class EffectiveContactsView(APIView):
                     'level': ec.source_level,
                     'distance': ec.distance,
                 },
-                'section': section,
+                'section': ec.section,
                 'via': {
                     'object_type': ec.via._meta.label_lower,
                     'object_id': ec.via.pk,
