@@ -1,0 +1,23 @@
+[project]
+name = "netbox-contact-inheritance"
+version = "0.1.0"
+description = "NetBox plugin that shows contacts inherited from region, site, location and rack on the objects below them"
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Stefan Grosser" }]
+requires-python = ">=3.12"
+classifiers = ["Framework :: Django", "Programming Language :: Python :: 3"]
+
+[project.urls]
+Homepage = "https://github.com/zebbra/netbox-contact-inheritance"
+Repository = "https://github.com/zebbra/netbox-contact-inheritance"
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["netbox_contact_inheritance", "netbox_contact_inheritance.api"]
+
+[tool.setuptools.package-data]
+netbox_contact_inheritance = ["templates/**/*.html"]

@@ -1,0 +1,53 @@
+{% load helpers i18n %}
+<div class="card">
+  <h2 class="card-header">{% trans "Reach" %}</h2>
+  {% if reach_rows %}
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>{% trans "Assigned to" %}</th>
+            <th>{% trans "Role" %}</th>
+            <th>{% trans "Priority" %}</th>
+            <th>{% trans "Inherit depth" %}</th>
+            {% for key, label in columns %}<th class="text-end">{{ label }}</th>{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in reach_rows %}
+            {% with a=row.assignment %}
+              <tr>
+                <td>
+                  <span class="text-secondary">{{ a.object_type.name|bettertitle }}</span>
+                  {% if a.object %}<a href="{% action_url a.object 'contacts' pk=a.object.pk %}">{{ a.object }}</a>{% else %}&mdash;{% endif %}
+                </td>
+                <td>{% if a.role %}<a href="{{ a.role.get_absolute_url }}">{{ a.role }}</a>{% else %}&mdash;{% endif %}</td>
+                <td>{{ a.get_priority_display|default:"&mdash;" }}</td>
+                <td>
+                  {{ row.depth }}
+                  <span class="text-secondary small">
+                    {% if row.depth_origin == 'assignment' %}({% trans "override" %}){% elif row.depth_origin == 'role' %}({% trans "role default" %}){% else %}({% trans "plugin default" %}){% endif %}
+                  </span>
+                </td>
+                {% for key, label in columns %}
+                  {% with cell=row.cells|get_key:key %}
+                    <td class="text-end">
+                      {% if not cell.reached %}<span class="text-muted">&ndash;</span>
+                      {% elif cell.count %}<a href="{{ cell.url }}">{{ cell.count }}</a>
+                      {% else %}0{% endif %}
+                    </td>
+                  {% endwith %}
+                {% endfor %}
+              </tr>
+            {% endwith %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="card-footer text-secondary small">
+      {% trans "Objects below each assignment that inherit it. A dash means the inherit depth does not reach that level." %}
+    </div>
+  {% else %}
+    <div class="card-body text-muted">{% trans "None" %}</div>
+  {% endif %}
+</div>
