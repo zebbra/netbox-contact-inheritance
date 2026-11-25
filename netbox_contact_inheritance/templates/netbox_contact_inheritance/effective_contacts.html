@@ -19,9 +19,8 @@
                   <a href="{{ a.contact.get_absolute_url }}">{{ a.contact }}</a>
                   {% if a.contact.phone or a.contact.email %}
                     <div class="small">
-                      {% if a.contact.phone %}<a href="tel:{{ a.contact.phone }}" class="text-nowrap">{{ a.contact.phone }}</a>{% endif %}
-                      {% if a.contact.phone and a.contact.email %}<span class="text-secondary">&middot;</span>{% endif %}
-                      {% if a.contact.email %}<a href="mailto:{{ a.contact.email }}">{{ a.contact.email }}</a>{% endif %}
+                      {% if a.contact.phone %}<a href="tel:{{ a.contact.phone }}" class="text-secondary text-nowrap me-2"><i class="mdi mdi-phone-outline"></i> {{ a.contact.phone }}</a>{% endif %}
+                      {% if a.contact.email %}<a href="mailto:{{ a.contact.email }}" class="text-secondary text-nowrap"><i class="mdi mdi-email-outline"></i> {{ a.contact.email }}</a>{% endif %}
                     </div>
                   {% endif %}
                 </td>
