@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from netbox.api.authentication import IsAuthenticatedOrLoginNotRequired
 from tenancy.api.serializers import ContactAssignmentSerializer, ContactRoleSerializer, ContactSerializer
 
+from ..circuit_contacts import CIRCUIT_MODELS, get_circuit_sections
 from ..resolver import SUPPORTED_MODELS, get_effective_contacts
 
 
@@ -34,8 +35,8 @@ class EffectiveContactsView(APIView):
             model = apps.get_model(label)
         except (LookupError, ValueError):
             raise ValidationError({'object_type': f'Unknown object type "{label}"'})
-        if model not in SUPPORTED_MODELS:
-            supported = ', '.join(m._meta.label_lower for m in SUPPORTED_MODELS)
+        if model not in SUPPORTED_MODELS + CIRCUIT_MODELS:
+            supported = ', '.join(m._meta.label_lower for m in SUPPORTED_MODELS + CIRCUIT_MODELS)
             raise ValidationError({'object_type': f'Not supported. Supported: {supported}'})
         if not object_id.isdigit():
             raise ValidationError({'object_id': 'An integer object_id is required'})
@@ -45,8 +46,12 @@ class EffectiveContactsView(APIView):
             raise NotFound()
 
         ctx = {'request': request}
+        if model in CIRCUIT_MODELS:
+            entries = [(s.key, ec) for s in get_circuit_sections(obj, request.user) for ec in s.items]
+        else:
+            entries = [(None, ec) for ec in get_effective_contacts(obj, request.user)]
         results = []
-        for ec in get_effective_contacts(obj, request.user):
+        for section, ec in entries:
             a = ec.assignment
             results.append({
                 'assignment': ContactAssignmentSerializer(a, nested=True, context=ctx).data,
@@ -62,5 +67,11 @@ class EffectiveContactsView(APIView):
                     'level': ec.source_level,
                     'distance': ec.distance,
                 },
+                'section': section,
+                'via': {
+                    'object_type': ec.via._meta.label_lower,
+                    'object_id': ec.via.pk,
+                    'display': str(ec.via),
+                } if ec.via else None,
             })
         return Response({'count': len(results), 'results': results})

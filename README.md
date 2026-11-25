@@ -43,6 +43,11 @@ to a device.
 - A **Reach** panel on contact pages: per assignment, how many sites, locations, racks, devices and
   VMs below the assigned object inherit it. Each count links to the regular NetBox list filtered to
   exactly those objects. When someone leaves, you see at a glance what depends on them.
+- **Circuits:** the panel on circuits shows the circuit's own contacts and those of its provider. Below
+  that comes one block per termination side (A, Z) with the contacts of the location or site the
+  termination is attached to, plus those of the devices cabled to it. The cable path is traced through
+  patch panels, and such entries are marked "via cable". A circuit termination page shows its own
+  side. Provider contacts reach the circuits unless their inherit depth is `none`.
 - A read-only API endpoint with the effective contacts of an object:
 
   ```
@@ -50,7 +55,9 @@ to a device.
   ```
 
   Each result holds the assignment, the full contact, role, priority, `inherited`, the applied
-  `inherit_depth` and the `source` object (type, id, level, distance).
+  `inherit_depth` and the `source` object (type, id, level, distance). For `circuits.circuit` and
+  `circuits.circuittermination`, each result also has a `section` (`circuit`, `A`, `Z`) and `via`
+  (the cabled device, or null).
 
 ![Reach of a contact](docs/reach-contact.png)
 
@@ -79,6 +86,9 @@ Example (as in the dev seed): the role *Facility* defaults to `site`, so the reg
 shows on the sites only. The caretaker of a datacenter gets `location`: building, floors and rooms,
 but the racks belong to IT. The electrician of a building gets `rack`. At a small branch site the
 caretaker also restarts the server and gets `device`.
+
+The Circuits column of the reach panel counts circuits for provider assignments only. Virtual circuits
+are not supported yet.
 
 `location` covers all nested location levels. "Down to the floor but not the rooms" is not possible.
 

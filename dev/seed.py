@@ -1,6 +1,10 @@
 # Demo data: a region tree, a large campus and a small branch site, with contacts on several levels.
 # Rerunning resets the contact assignments to this state.
-from dcim.models import Device, DeviceRole, DeviceType, Location, Manufacturer, Rack, Region, Site, SiteGroup
+from circuits.models import Circuit, CircuitTermination, CircuitType, Provider
+from dcim.models import (
+    Cable, Device, DeviceRole, DeviceType, FrontPort, Interface, Location, Manufacturer, PortMapping, Rack, RearPort,
+    Region, Site, SiteGroup,
+)
 from tenancy.models import Contact, ContactAssignment, ContactGroup, ContactRole
 from virtualization.models import Cluster, ClusterType, VirtualMachine
 
@@ -61,6 +65,47 @@ ap_office = get(Device, name='ap-zh-oerlikon-3og-01', defaults={
 srv_dc = get(Device, name='srv-rz-a01-01', defaults={
     'device_type': srv_t, 'role': srv_role, 'site': dc, 'location': dc_room, 'rack': dc_rack})
 
+# Circuits: a dark fiber Bern - Zurich (side Z through a patch panel) and an uncabled internet line in Thun
+pp_t = get(DeviceType, manufacturer=mf, model='Patch Panel 24', defaults={'slug': 'patch-panel-24'})
+pp_role = get(DeviceRole, name='Patch Panel', defaults={'slug': 'patch-panel'})
+pp = get(Device, name='pp-rz-a01', defaults={
+    'device_type': pp_t, 'role': pp_role, 'site': dc, 'location': dc_room, 'rack': dc_rack})
+if_bern = get(Interface, device=sw_rack, name='Gi1/0/48', defaults={'type': '1000base-x-sfp'})
+if_dc = get(Interface, device=srv_dc, name='eth0', defaults={'type': '10gbase-x-sfpp'})
+rp = get(RearPort, device=pp, name='RP1', defaults={'type': 'lc'})
+fp = get(FrontPort, device=pp, name='FP1', defaults={'type': 'lc'})
+if not PortMapping.objects.filter(front_port=fp).exists():
+    PortMapping.objects.create(device=pp, front_port=fp, front_port_position=1, rear_port=rp, rear_port_position=1)
+
+provider = get(Provider, name='Fibernet AG', defaults={'slug': 'fibernet'})
+df_type = get(CircuitType, name='Dark Fiber', defaults={'slug': 'dark-fiber'})
+inet_type = get(CircuitType, name='Internet', defaults={'slug': 'internet'})
+df = get(Circuit, cid='DF-BE-ZH-001', provider=provider, defaults={'type': df_type})
+inet = get(Circuit, cid='INET-THUN-01', provider=provider, defaults={'type': inet_type})
+
+
+def termination(circuit, side, scope):
+    t = CircuitTermination.objects.filter(circuit=circuit, term_side=side).first()
+    if t is None:
+        t = CircuitTermination(circuit=circuit, term_side=side, termination=scope)
+        t.save()
+    return t
+
+
+term_a = termination(df, 'A', room101)
+term_z = termination(df, 'Z', dc_room)
+termination(inet, 'A', branch)
+
+
+def cable(a, b):
+    if not a.cable and not b.cable:
+        Cable(a_terminations=[a], b_terminations=[b]).save()
+
+
+cable(term_a, if_bern)
+cable(term_z, rp)
+cable(fp, if_dc)
+
 ctype = get(ClusterType, name='VMware', defaults={'slug': 'vmware'})
 cluster = get(Cluster, name='bern-cluster', defaults={'type': ctype, 'scope': campus})
 vm = get(VirtualMachine, name='vm-app-01', defaults={'cluster': cluster, 'site': campus})
@@ -86,6 +131,10 @@ for name, email, phone in (
     ('Linux Admins', 'linux-admins@example.com', ''),
     ('Pikett IT', 'pikett@example.com', '+41 31 000 00 05'),
     ('Rack Owner Max', 'max@example.com', ''),
+    ('Server Owner Lea', 'lea@example.com', ''),
+    ('WAN Team', 'wan@example.com', '+41 31 000 00 07'),
+    ('Fibernet NOC', 'noc@fibernet.example', '+41 800 000 001'),
+    ('Fibernet Account Manager', 'sales@fibernet.example', ''),
 ):
     p = get(Contact, name=name, defaults={'email': email, 'phone': phone})
     p.groups.add(internal)
@@ -112,5 +161,9 @@ assign(dc, 'Hauswart RZ', facility, 'primary', depth='location')     # datacente
 assign(bldg_a, 'Elektriker Gebaeude A', facility, depth='rack')       # power: down to the racks
 assign(bldg_a, 'Linux Admins', technical)
 assign(sw_rack, 'Rack Owner Max', technical, 'tertiary')
+assign(srv_dc, 'Server Owner Lea', technical)
+assign(df, 'WAN Team', technical, 'primary')
+assign(provider, 'Fibernet NOC', technical, 'secondary')
+assign(provider, 'Fibernet Account Manager', escalation, depth='none')  # stays on the provider
 
 print('seeded:', ContactAssignment.objects.count(), 'contact assignments')

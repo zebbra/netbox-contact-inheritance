@@ -1,0 +1,36 @@
+{% load helpers i18n %}
+{% for ec in items %}
+  {% with a=ec.assignment %}
+    <tr>
+      <td>
+        <a href="{{ a.contact.get_absolute_url }}">{{ a.contact }}</a>
+        {% if a.contact.phone or a.contact.email %}
+          <div class="small">
+            {% if a.contact.phone %}<a href="tel:{{ a.contact.phone }}" class="text-secondary text-nowrap me-2"><i class="mdi mdi-phone-outline"></i> {{ a.contact.phone }}</a>{% endif %}
+            {% if a.contact.email %}<a href="mailto:{{ a.contact.email }}" class="text-secondary text-nowrap"><i class="mdi mdi-email-outline"></i> {{ a.contact.email }}</a>{% endif %}
+          </div>
+        {% endif %}
+      </td>
+      <td>
+        <span class="text-nowrap">
+          {% if a.role %}<a href="{{ a.role.get_absolute_url }}">{{ a.role }}</a>{% else %}&mdash;{% endif %}
+          {% if a.priority %}
+            <i class="mdi {% if a.priority == 'primary' %}mdi-numeric-1-circle{% elif a.priority == 'secondary' %}mdi-numeric-2-circle-outline{% elif a.priority == 'tertiary' %}mdi-numeric-3-circle-outline{% else %}mdi-numeric-4-circle-outline{% endif %} text-secondary"
+               title="{% trans 'Priority' %}: {{ a.get_priority_display }}" aria-label="{% trans 'Priority' %}: {{ a.get_priority_display }}"></i>
+          {% endif %}
+        </span>
+      </td>
+      <td>
+        {% if ec.inherited %}
+          <div class="small text-secondary">{{ ec.source_label }}</div>
+          <a href="{{ ec.source.get_absolute_url }}">{{ ec.source }}</a>
+          {% if ec.via %}
+            <div class="small text-secondary text-nowrap"><i class="mdi mdi-cable-data"></i> {% if ec.via == ec.source %}{% trans "via cable" %}{% else %}{% trans "via" %} <a href="{{ ec.via.get_absolute_url }}" class="text-secondary">{{ ec.via }}</a>{% endif %}</div>
+          {% endif %}
+        {% else %}
+          <a href="{% action_url ec.source 'contacts' pk=ec.source.pk %}">{% trans "direct" %}</a>
+        {% endif %}
+      </td>
+    </tr>
+  {% endwith %}
+{% endfor %}

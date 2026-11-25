@@ -1,5 +1,6 @@
 from netbox.plugins import PluginTemplateExtension
 
+from .circuit_contacts import get_circuit_sections
 from .reach import COLUMN_LABELS, COLUMNS, get_contact_reach
 from .resolver import get_effective_contacts
 
@@ -43,4 +44,23 @@ class ContactReachPanel(PluginTemplateExtension):
         })
 
 
-template_extensions = [EffectiveContactsPanel, ContactReachPanel]
+class CircuitContactsPanel(PluginTemplateExtension):
+    """
+    Effective contacts of a circuit (own and provider, then per termination side the scope and the
+    cabled devices), or of a single circuit termination.
+    """
+    models = ['circuits.circuit', 'circuits.circuittermination']
+
+    def right_page(self):
+        request = self.context['request']
+        if not request.user.has_perm('tenancy.view_contactassignment'):
+            return ''
+        obj = self.context['object']
+        sections = get_circuit_sections(obj, request.user)
+        return self.render('netbox_contact_inheritance/circuit_contacts.html', {
+            'sections': sections,
+            'show_section_headers': len(sections) > 1 or bool(sections[0].termination),
+        })
+
+
+template_extensions = [EffectiveContactsPanel, ContactReachPanel, CircuitContactsPanel]

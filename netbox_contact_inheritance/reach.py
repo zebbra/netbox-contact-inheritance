@@ -9,11 +9,12 @@ from urllib.parse import urlencode
 
 from django.urls import reverse
 
+from circuits.models import Circuit, Provider
 from dcim.models import Device, Location, Rack, Region, Site, SiteGroup
 from virtualization.models import VirtualMachine
 
 from .resolver import resolve_depth
-from .rules import reaches
+from .rules import DEPTH_NONE, reaches
 
 # (column key, level used for the depth check, model, list view)
 COLUMNS = (
@@ -22,8 +23,12 @@ COLUMNS = (
     ('racks', 'rack', Rack, 'dcim:rack_list'),
     ('devices', 'device', Device, 'dcim:device_list'),
     ('vms', 'device', VirtualMachine, 'virtualization:virtualmachine_list'),
+    ('circuits', None, Circuit, 'circuits:circuit_list'),
 )
-COLUMN_LABELS = {'sites': 'Sites', 'locations': 'Locations', 'racks': 'Racks', 'devices': 'Devices', 'vms': 'VMs'}
+COLUMN_LABELS = {
+    'sites': 'Sites', 'locations': 'Locations', 'racks': 'Racks', 'devices': 'Devices', 'vms': 'VMs',
+    'circuits': 'Circuits',
+}
 
 
 def _scopes(obj):
@@ -69,6 +74,8 @@ def _scopes(obj):
             'racks': ({'location__in': tree}, params),
             'devices': ({'location__in': tree}, params),
         }
+    if isinstance(obj, Provider):
+        return {'circuits': ({'provider': obj}, {'provider_id': obj.pk})}
     if isinstance(obj, Rack):
         return {'devices': ({'rack': obj}, {'rack_id': obj.pk})}
     return {}
@@ -95,7 +102,9 @@ def get_reach(assignment, user=None):
     cells = {}
     for key, level, model, viewname in COLUMNS:
         scope = scopes.get(key)
-        if scope is None or not reaches(level, depth):
+        # Circuits inherit from their provider unless the depth is "none"
+        reached = depth != DEPTH_NONE if level is None else reaches(level, depth)
+        if scope is None or not reached:
             cells[key] = ReachCell(reached=False)
             continue
         filters, params = scope

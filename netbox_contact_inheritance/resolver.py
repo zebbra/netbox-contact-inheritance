@@ -20,6 +20,8 @@ LEVEL_LABELS = {
     'location': 'Location',
     'rack': 'Rack',
     'device': 'Device',
+    'provider': 'Provider',
+    'circuit': 'Circuit',
 }
 
 
@@ -91,6 +93,7 @@ class EffectiveContact:
     distance: int
     inherited: bool
     depth: str
+    via: object = None  # device reached over a cable, for circuit terminations
 
     @property
     def source_label(self):
